@@ -57,7 +57,7 @@ app.use(require('./src/routes'));
 
 // Create server
 const server = http.createServer(app).listen(process.env.PORT, function() {
-  logger.info('Lancement du moteur de recherche' + process.env.PORT + ' in ' + app.get('env') + ' mode');
+  logger.info('Lancement du projet.\nPort : ' + process.env.PORT + '\nEnv : ' + app.get('env') + ' mode');
 });
 
 // Compression
