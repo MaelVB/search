@@ -8,8 +8,11 @@ routerRoot.get('/ping', function(req, res) {
   res.send('PONG');
 });
 
-routerRoot.get('/crawler', function(req, res) {
-  res.send('c');
+// ?q= query
+// / params
+routerRoot.get('/search', function(req, res) {
+  const searchQuery = req.query.q;
+  res.render('search_page', { results: results });
 });
 
 module.exports = routerRoot;

@@ -17,7 +17,12 @@ const compression = require('compression');
 const session = require('express-session');
 
 // init databases
-// require('./src/services/db');
+require('./src/services/db');
+require('./src/services/crawler');
+
+// Config
+app.set('view engine', 'ejs');
+app.set('views', __dirname + '/views');
 
 // Format logs
 if (app.get('env') === 'development') {

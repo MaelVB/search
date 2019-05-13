@@ -1,10 +1,14 @@
-import { connect } from 'net';
-
 'use strict';
 
 const Sequelize = require('sequelize');
-const sequelize = new Sequelize(process.env.DB_UR); //'postgres://user:pass@example.com:5432/dbname'
-
+const databaseName = process.env.DB_NAME;
+const userName = process.env.DB_USER_NAME;
+const userPass = process.env.DB_USER_PASS;
+const databaseHost = process.env.DB_HOST;
+const sequelize = new Sequelize(databaseName, userName, userPass, {
+  host: databaseHost,
+  dialect: 'mysql'
+});
 
 async function DB() {
   try {
@@ -15,19 +19,11 @@ async function DB() {
   }
 }
 
-function connect() {
-  const sequelize = new Sequelize('postgres://user:pass@example.com:5432/dbname');
-}
-/*
-// http://docs.sequelizejs.com/manual/getting-started.html
-// Option 1: Passing parameters separately
+// function selectSites() {
+//   sequelize.query("SELECT * FROM `sites`", { type: sequelize.QueryTypes.SELECT })
+//     .then(sites => {
+//       console.log(sites);
+//     })
+// }
 
-const sequelize = new Sequelize('database', 'username', 'password', {
-  host: 'localhost',
-  dialect: // one of 'mysql' | 'mariadb' | 'postgres' | 'mssql'
-});
-
-// Option 2: Using a connection URI
-const sequelize = new Sequelize('postgres://user:pass@example.com:5432/dbname');
-*/
 module.exports = sequelize;

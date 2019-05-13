@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/kbouzidi/search#readme",
   "dependencies": {
+    "@vue/cli": "^3.7.0",
     "body-parser": "^1.19.0",
     "bunyan": "^1.8.12",
     "bunyan-format": "^0.2.1",
@@ -33,7 +34,10 @@
     "express": "^4.16.4",
     "express-session": "^1.16.1",
     "fast-xml-parser": "^3.12.16",
+    "mysql2": "^1.6.5",
+    "net": "^1.0.2",
     "sequelize": "^5.8.2",
-    "sync-request": "^6.1.0"
+    "sync-request": "^6.1.0",
+    "vue": "^2.6.10"
   }
 }
