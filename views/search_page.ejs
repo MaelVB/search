@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Page Title</title>
+        <link rel="stylesheet" type="text/css" href="css/generic.css">
+    </head>
+    <body>
+
+        <div id=search-bar>
+            <table id="search-result" >  
+                    <thead>  
+                        <tr>  
+                            <th>Url</th> 
+                        </tr>  
+                    </thead>  
+                     <tbody>  
+                     <% print.forEach(function (res) { %>
+                        <tr>  
+                            <td><a href=<%= res.url %>><%= res.url %></a></td>  
+                        </tr>                                   
+                     <% }) %>
+                     </tbody>
+                </table>
+        </div>
+    </body>
+</html> 

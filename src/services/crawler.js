@@ -1,16 +1,37 @@
 'use strict';
-// https://medium.com/robots.txt --> <loc> --> /posts/
-  // <meta property="og:title" content="How to Minimize the Sales Cycle Time">
-  // <meta property="og:type" content="article">
+
+/** TODO :
+ * Choisir ou pas d'alimenter à nouveau la DB
+ * Sélection des pages selon les disallow et la date
+ * Boucle sur plusieurs sites
+ * Récupération de plusieurs types de métadata en fonction d'un tableau de données
+ * Prendre en compte les spécifités de chaque site (emplacement des sitemaps, types de fichier, infos du robots.txt)
+*/
 
 const request = require('sync-request');
 const cheerio = require('cheerio');
 const logger = require('../libs/logger');
 const database = require('./db');
 const Sequelize = require('sequelize');
-const annee = 2015;
+let JSONresult;
 let htmlTab = new Array;
+let metaTab = new Array;
+const annee = 2015;
 let compteur = 1;
+
+crawlWebsites();
+
+async function crawlWebsites() {
+  if(await init()){
+    await database.query("SELECT `url` FROM `sites` ;", {type: Sequelize.QueryTypes.SELECT}).then(async function(sites) {
+      for(let i=0;i<sites.length;i++) {
+        getPages(sites[i]["url"]);
+      }
+    }); 
+  } else {
+    logger.error("Erreur à l'initialisation");
+  }
+}
 
 async function init() {
   try {
@@ -22,18 +43,6 @@ async function init() {
   }
 }
 
-async function crawlWebsites() {
-  if(await init()){
-    await database.query("SELECT `url` FROM `sites` ;", {type: Sequelize.QueryTypes.SELECT}).then(async function(sites) {
-      for(let i=0;i<sites.length;i++) {
-        getPages(sites[i]["url"]);
-      }
-    }) 
-  } else {
-    logger.error("Erreur à l'initialisation");
-  }
-}
-
 async function getPages(url) {
   htmlTab.push(url);
   let robotsTxtValues = await crawlRobotsTxt(url);
@@ -41,10 +50,27 @@ async function getPages(url) {
   let sitemapsUrl = robotsTxtValues[1];
   let xmlUrl = sitemapsUrl[0];
   let urlBase = [url];
-  await crawlXml(xmlUrl); // TODO Boucle avec les sites
-  htmlTab.forEach(function(element){
-    getInfos(element);
+  await crawlXml(xmlUrl); // TODO Boucle avec les sites + conditions avec les disallow
+
+  // htmlTab.forEach(function(element){
+  //   getInfos(element);
+  // });
+  let elmt=0;
+  while(elmt<htmlTab.length && elmt<50){
+    console.log(elmt);
+    let eachElmnt = htmlTab[elmt];
+    getInfos(eachElmnt);
+    elmt++;
+  }
+  logger.info('Traitement terminé.');
+
+  let metaKey = "og:title";
+  metaTab.forEach(function(element){
+    addMetaToDb(url,metaKey,element);
   });
+  logger.info('Ajout DB effectué.');
+
+  JSONresult = selectResultToJson();
 }
 
 async function crawlRobotsTxt(url){
@@ -62,7 +88,8 @@ async function crawlRobotsTxt(url){
       j++;
     } else if (robotsTab[i].includes("Sitemap") && !(robotsTab[i].startsWith("#"))) {
         let urlR = url.substring(0, url.length-1);
-        sitemapsUrl[k] = urlR+cutTxtLigne(robotsTab[i]); //TODO condition si juste slash
+        sitemapsUrl[k] = cutTxtLigne(robotsTab[i]);
+        // sitemapsUrl[k] = urlR+cutTxtLigne(robotsTab[i]); //TODO condition si juste slash
       k++;
     }
   }
@@ -71,74 +98,44 @@ async function crawlRobotsTxt(url){
 }
 
 async function crawlXml(xmlUrl){
-        const responseSitemap = request('GET', xmlUrl);
-        if((responseSitemap.statusCode !== 404)) {
-          const $ = cheerio.load(responseSitemap.getBody());
-          let newXmlUrlTab = $('loc').map(function() {
-            return $(this).text();
-          }).toArray();
-          newXmlUrlTab.forEach(function(element){
-            // let regle = new RegExp("^[^x]*xml$");
-            if(element.endsWith(".xml")){
-              crawlXml(element);
-            } else if(1) {
-                console.log(compteur);
-                console.log(element);
-                htmlTab.push(element);
-                compteur++;
-            } else {
-              console.log("Article too old or not authorized.");
-            }
-          });
-        } else {
-          console.log("Erreur 404");
-        }
+  const responseSitemap = request('GET', xmlUrl);
+  if((responseSitemap.statusCode !== 404)) {
+    const $ = cheerio.load(responseSitemap.getBody());
+    let newXmlUrlTab = $('loc').map(function() {
+    return $(this).text();
+  }).toArray();
+    newXmlUrlTab.forEach(function(element){
+      // let regle = new RegExp("^[^x]*xml$");
+      if(element.endsWith(".xml")){
+        crawlXml(element);
+      } else if(1) {
+        console.log(compteur);
+        console.log(element);
+        htmlTab.push(element);
+        compteur++;
+      } else {
+        console.log("Pages too old or not authorized.");
+      }
+    });
+  } else {
+    console.log("Erreur 404");
+  }
 }
 
-// function recentPublish(xmlUrl) {
-//   const $ = cheerio.load(xmlUrl.getBody());
-//   console.log($);
-//   let xmlDate = $('lastmod').map(function() {
-//     console.log($(this).text());
-//     return $(this).text();
-//   }).toArray();
-
-//   console.log("r");
-//   xmlDate.forEach(function(element){
-//     console.log(element);
-//   });
-// }
-
-// async function crawlXml(xmlUrlTab){
-//   if(Array.isArray(xmlUrlTab)){
-//     xmlUrlTab.forEach(function(xmlUrl){
-//         const responseSitemap = request('GET', xmlUrl);
-//         if(responseSitemap.statusCode !== 404) {
-//           const $ = cheerio.load(responseSitemap.getBody());
-//           let newXmlUrlTab = $('loc').map(function() {
-//             return $(this).text();
-//           }).toArray();
-//           newXmlUrlTab.forEach(function(element){
-//             // let regle = new RegExp("^[^x]*xml$");
-//             if(element.endsWith(".xml")){
-//               crawlXml(element);
-//             } else {
-//               htmlTab.push(element);
-//             }
-//           });
-//         } else {
-//           console.log("Erreur 404");
-//         }
-//     });
-//   }
-// }
-
-function getInfos(pageUrl) {
+async function getInfos(pageUrl) {
   // logger.info('Parsing URL [%s]', pageUrl);
-  // const response = request('GET', pageUrl);
-  // const $ = cheerio.load(response.getBody());
-  // let metaImage = $('meta[property="og:image"]').attr('content');
-  // console.log(metaImage);
+
+  const response = request('GET', pageUrl);
+  const $ = cheerio.load(response.getBody());
+  try {
+    let metaTitle = $('meta[property="og:title"]').attr('content');
+    metaTab.push(metaTitle);
+    // let metaType = $('meta[property="og:type"]').attr('content');
+    // let metaImage = $('meta[property="og:image"]').attr('content');
+    console.log(metaTitle);
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 function cutTxtLigne(ligne) {
@@ -147,36 +144,15 @@ function cutTxtLigne(ligne) {
   return value;
 }
 
-// function crawl(url, rawText) {
-//   let urls = new Array();
-//   let htmlCode = request('GET', url);
-//   htmlCode.match("http[^<>]*").array.forEach(url => {
-//     if (!url.test("\.xml$")) getMeta(url);
-//     else if (!isInRobot(url))urls.push(url);
-//   });
+async function addMetaToDb(url,metaKey,metaValue){
+  await database.query("INSERT INTO `metas` (url, metaKey, value) VALUES ('"+url+"','"+metaKey+"','"+metaValue+"');");
+}
 
-//   urls.forEach(url => crawl(url)); 
-// }
+async function selectResultToJson() {
+  await database.query("SELECT `url` FROM `metas` ;", {type: Sequelize.QueryTypes.SELECT}).then(async function(metas) {
+    let jsonobj = {};
+    
+  }); 
+}
 
-
-// function makeDisallow(url) {
-//   let disallow = new Array();
-//   let rawText = request('GET', url);
-//   let RawDisallow = rawText.match("Disallow[^(/td)]*");
-//   RawDisallow.forEach(raw => disallow.push(raw.match("[^:]*$")[0]));
-// }
-
-// function isInRobotTxt(url, baseUrl) {
-//   let found;
-//   //disallow.forEach(d => );
-// }
-
-// function isInDisallow(parsedUrl, disallow) {
-//   let parsedUrlTab = parsedUrl.slice('/');
-//   let disallowTab = disallow.slice('/');
-
-//   if(disallow.test('$$'))
-  
-// }
-
-crawlWebsites();
+// module.exports = JSONresult;

@@ -1,0 +1,32 @@
+html {
+    text-align: center;
+    background-color: rgb(28,47,75);
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
+}
+
+#search-bar {
+    min-height: 100%;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.row {
+    padding: 30px;
+    margin-top: 150px;
+    background-color: rgb(20, 34, 54);
+    border: solid rgb(13,22,36) 3px;
+    border-radius: 5px;
+}
+
+a {
+    color: grey;
+
+}
+
+a:hover {
+    color: white;
+}

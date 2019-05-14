@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Search Engine Index</title>
+        <link rel="stylesheet" type="text/css" href="css/generic.css">
+        <script>
+            function init(){
+                let loadCrawler = 1;
+                if(loadCrawler){
+                    require('../src/services/crawler');
+                    loadCrawler = 0;
+                }
+            }
+        </script>
+    </head>
+    <body onLoad="init()">
+        <h1>Moteur de recherche</h1>
+        <div id="search-bar">
+            <div class="row">
+                <form action="/search" method="GET">
+                    <label for="search">Entrez votre recherche : </label><input type="text" id="search" name="search">
+                    <input type="submit" value="Envoyer">
+                </form>
+            </div>
+        </div>
+    </body>
+</html> 

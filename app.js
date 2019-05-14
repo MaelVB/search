@@ -18,7 +18,6 @@ const session = require('express-session');
 
 // init databases
 require('./src/services/db');
-require('./src/services/crawler');
 
 // Config
 app.set('view engine', 'ejs');
@@ -38,6 +37,7 @@ if (app.get('env') === 'development') {
 
 // Initialisation de repertoire public
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname + '/public'));
 
 // Session
 app.use(session({
