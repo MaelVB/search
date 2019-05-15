@@ -70,7 +70,7 @@ async function getPages(url) {
   });
   logger.info('Ajout DB effectué.');
 
-  JSONresult = selectResultToJson();
+  // JSONresult = selectResultToJson();
 }
 
 async function crawlRobotsTxt(url){
@@ -148,11 +148,11 @@ async function addMetaToDb(url,metaKey,metaValue){
   await database.query("INSERT INTO `metas` (url, metaKey, value) VALUES ('"+url+"','"+metaKey+"','"+metaValue+"');");
 }
 
-async function selectResultToJson() {
-  await database.query("SELECT `url` FROM `metas` ;", {type: Sequelize.QueryTypes.SELECT}).then(async function(metas) {
-    let jsonobj = {};
+// async function selectResultToJson() {
+//   await database.query("SELECT `url` FROM `metas` ;", {type: Sequelize.QueryTypes.SELECT}).then(async function(metas) {
+//     let jsonobj = {};
     
-  }); 
-}
+//   }); 
+// }
 
 // module.exports = JSONresult;
